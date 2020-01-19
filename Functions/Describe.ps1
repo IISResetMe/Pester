@@ -90,6 +90,18 @@ about_TestDrive
         $script:mockTable = @{ }
     }
 
+    if (-not($PSBoundParameters.ContainsKey('NoTestDrive'))) {
+        $FirstTestDrive = $Fixture.Ast.Find( {
+                param($SubAst)
+                $sce = $SubAst -as [System.Management.Automation.Language.StringConstantExpressionAst]
+                if ($sce) {
+                    return $sce.Value -match 'TestDrive:'
+                }
+                return $false
+            }, $true)
+        $PSBoundParameters['NoTestDrive'] = $null -eq $FirstTestDrive
+    }
+
     DescribeImpl @PSBoundParameters -CommandUsed 'Describe' -Pester $Pester -DescribeOutputBlock ${function:Write-Describe} -TestOutputBlock ${function:Write-PesterResult} -NoTestRegistry:('Windows' -ne (GetPesterOs))
 }
 
